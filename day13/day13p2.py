@@ -1,9 +1,11 @@
-import re, math
+import re
 from button import Button, ButtonA, ButtonB
 
 # @author Mark White
 # Advent of Code - Day 13
-# https://adventofcode.com/2024/day/13
+# https://adventofcode.com/2024/day/13#part2
+
+debug = False
 
 buttonPattern = r"Button (\w)\: X\+(\d+), Y\+(\d+)"
 prizePattern = r'Prize: X=(\d+), Y=(\d+)'
@@ -36,10 +38,10 @@ def findOptimalFormulaic(prize: list[int], buttons: list[Button]):
     buttonB = buttons[1]
 
     bPresses = ((prizeY / buttonA.yMove) - (prizeX / buttonA.xMove)) / (( -1 * buttonB.xMove / buttonA.xMove) + (buttonB.yMove / buttonA.yMove))
-    bPresses = round(bPresses, 5)
+    bPresses = round(bPresses, 3)
     aPresses = ((prizeX - (buttonB.xMove * bPresses)) / buttonA.xMove)
 
-    # print(f"found a({aPresses}) and b({bPresses})")
+    if debug: print(f"found a({aPresses}) and b({bPresses})")
     if hasDecimal(bPresses) or hasDecimal(aPresses):
         return None
     else:
@@ -74,7 +76,7 @@ with open('day13/input.txt', 'r') as file:
         else:
             match = re.search(prizePattern, line)
             if match:
-                prize = [int(match.group(1)), int(match.group(2))]
+                prize = [int(match.group(1))+10000000000000, int(match.group(2))+10000000000000]
                 totalTries = totalTries + 1
                 # print("Prizes at: " + str(prize))
                 # do stuff to actually see if we can pull prize here
@@ -83,7 +85,7 @@ with open('day13/input.txt', 'r') as file:
                     totalAPresses = totalAPresses + answer[0]
                     totalBPresses = totalBPresses + answer[1]
                     totalWins = totalWins + 1
-                    print(f"We won prize({prize}) {totalTries}; {buttonA}, {buttonB}, {answer}")
+                    if debug: print(f"We won prize {totalTries}")
 
     costA = totalAPresses * buttonA.moveCost
     costB = totalBPresses * buttonB.moveCost
