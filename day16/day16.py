@@ -31,8 +31,20 @@ class Coords:
     def __init__(self, r: int, c: int):
         self.row = r
         self.column = c
+        self.space = space
     def __str__(self):
         return f'Coords({self.row}, {self.column})'
+
+class PuzzleSpace:
+    coords : Coords = None
+    space : str = None # START, END, WALL, or open
+    def __init__(self, coords : Coords, space : str):
+        self.coords = coords
+        self.space = space
+    def isWall(self):
+        return self.space == WALL
+    def isEnd(self):
+        return self.space == END
 
 class Reindeer:
     coords : Coords = None
@@ -85,26 +97,36 @@ class Reindeer:
     def __str__(self):
         return f'Reindeer({self.coords}, {self.direction})'
 
-puzzle : list[list[int]] = []
+puzzle : list[list[Coords]] = []
 
-def standingOn(re:Reindeer):
-    return puzzle[re.coords.row][re.coords.column]
+def standingOn(coords:Coords) -> PuzzleSpace:
+    return puzzle[coords.row][coords.column]
 
 def isReindeerValid(re: Reindeer):
-    return standingOn(re) != WALL
+    return not standingOn(re.coords).isWall()
 
 def isAtEnd(re:Reindeer):
-    return standingOn(re) == END
+    return standingOn(re.coords).isEnd()
 
-def findPath(re:Reindeer):
-    points = 0
-    while isReindeerValid(re):
-        if isAtEnd(re): return points
-        points += 1
-        re.moveFoward()
-    return -1 # couldn't find the End
+def peekDirectionValid(re : Reindeer, direction : str):
+    checkCoords = Coords(re.coords.row, re.coords.column)
+    if direction == NORTH:
+        checkCoords.row = re.coords.row - 1
+    elif direction == EAST:
+        checkCoords.column = re.coords.column + 1
+    elif direction == SOUTH:
+        checkCoords.row = re.coords.row + 1
+    elif direction == WEST:
+        checkCoords.column = re.coords.column - 1
+    else:
+        print(f"ERROR: peekDirection failed, invalid internal direction {direction}") # failure to provide a valid direction
+    
+    return not standingOn(checkCoords).isWall()
 
-def tryMoveReindeer(re:Reindeer, action):
+def dfs(re:Reindeer):
+    pass
+
+def tryMoveReindeer(re:Reindeer, action): # doesn't work, too recursive
     points = 0
     if (action == ACTION_MOVE):
         re.moveFoward()
@@ -151,11 +173,12 @@ with open('day16/testinput.txt', 'r') as file:
         currentColumn = 0
         for column in line:
             if column != "\n":
+                currentCoords = Coords(currentRow, currentColumn)
                 if (column == START) :
-                    start = Coords(currentRow, currentColumn)
+                    start = currentCoords
                 elif column == END :
-                    end = Coords(currentRow, currentColumn)
-                puzzleRow.append(column)
+                    end = currentCoords
+                puzzleRow.append(currentCoords)
                 currentColumn += 1
         puzzle.append(puzzleRow)
         currentRow += 1
